@@ -1,0 +1,190 @@
+=== Virtual Memory Overcommit Thread Test ===
+Date: Wed  2 Jul 19:44:47 IST 2025
+System: Linux pi 6.6.31+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.6.31-1+rpt1 (2024-05-29) aarch64 GNU/Linux
+
+Original settings:
+overcommit_memory: 0
+overcommit_ratio: 50
+
+=== Test 1: Current Settings ===
+=== Initial System State ===
+Overcommit memory setting:
+0
+
+Overcommit ratio:
+50
+
+Memory info:
+               total        used        free      shared  buff/cache   available
+Mem:           3.7Gi       158Mi       3.3Gi       1.1Mi       318Mi       3.5Gi
+Swap:          199Mi          0B       199Mi
+
+Commit limits:
+CommitLimit:     2146328 kB
+Committed_AS:     197112 kB
+
+Thread limits:
+26113
+
+Current thread count:
+165
+
+=== Test 2: Restrictive Overcommit (ratio=10) ===
+Setting overcommit_memory=2 (strict accounting)
+Setting overcommit_ratio=10 (very restrictive)
+vm.overcommit_memory = 2
+vm.overcommit_ratio = 10
+=== Initial System State ===
+Overcommit memory setting:
+2
+
+Overcommit ratio:
+10
+
+Memory info:
+               total        used        free      shared  buff/cache   available
+Mem:           3.7Gi       158Mi       3.3Gi       1.1Mi       318Mi       3.5Gi
+Swap:          199Mi          0B       199Mi
+
+Commit limits:
+CommitLimit:      593100 kB
+Committed_AS:     197112 kB
+
+Thread limits:
+26113
+
+Current thread count:
+165
+
+Running C thread test...
+Current state during C test:
+=== Initial System State ===
+Overcommit memory setting:
+2
+
+Overcommit ratio:
+10
+
+Memory info:
+               total        used        free      shared  buff/cache   available
+Mem:           3.7Gi       157Mi       3.3Gi       1.1Mi       318Mi       3.5Gi
+Swap:          199Mi          0B       199Mi
+
+Commit limits:
+CommitLimit:      593100 kB
+Committed_AS:     566124 kB
+
+Thread limits:
+26113
+
+Current thread count:
+211
+
+=== Test 3: Permissive Overcommit (ratio=75) ===
+Setting overcommit_ratio=75 (more permissive)
+vm.overcommit_ratio = 75
+=== Initial System State ===
+Overcommit memory setting:
+2
+
+Overcommit ratio:
+75
+
+Memory info:
+               total        used        free      shared  buff/cache   available
+Mem:           3.7Gi       159Mi       3.3Gi       1.1Mi       318Mi       3.5Gi
+Swap:          199Mi          0B       199Mi
+
+Commit limits:
+CommitLimit:     3117092 kB
+Committed_AS:     197372 kB
+
+Thread limits:
+26113
+
+Current thread count:
+165
+
+Running Java thread test...
+Starting thread creation test...
+Target threads: 3000
+[0.549s][warning][os,thread] Failed to start thread "Unknown thread" - pthread_create failed (EAGAIN) for attributes: stacksize: 2040k, guardsize: 0k, detached.
+[0.549s][warning][os,thread] Failed to start the native thread for java.lang.Thread "Thread-1281"
+[thread 11044 also had an error]
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (malloc) failed to allocate 32744 bytes. Error detail: ChunkPool::allocate
+# An error report file with more information is saved as:
+# /home/pi/threadt/hs_err_pid11029.log
+Current state during Java test:
+=== Initial System State ===
+Overcommit memory setting:
+2
+
+Overcommit ratio:
+75
+
+Memory info:
+               total        used        free      shared  buff/cache   available
+Mem:           3.7Gi       155Mi       3.3Gi       1.1Mi       319Mi       3.6Gi
+Swap:          199Mi          0B       199Mi
+
+Commit limits:
+CommitLimit:     3117092 kB
+Committed_AS:     197372 kB
+
+Thread limits:
+26113
+
+Current thread count:
+166
+
+=== Test 4: No Overcommit Limits (overcommit_memory=1) ===
+Setting overcommit_memory=1 (always allow)
+vm.overcommit_memory = 1
+=== Initial System State ===
+Overcommit memory setting:
+1
+
+Overcommit ratio:
+75
+
+Memory info:
+               total        used        free      shared  buff/cache   available
+Mem:           3.7Gi       156Mi       3.3Gi       1.1Mi       319Mi       3.6Gi
+Swap:          199Mi          0B       199Mi
+
+Commit limits:
+CommitLimit:     3117092 kB
+Committed_AS:     197372 kB
+
+Thread limits:
+26113
+
+Current thread count:
+166
+
+Running final thread test...
+Final state:
+=== Initial System State ===
+Overcommit memory setting:
+1
+
+Overcommit ratio:
+75
+
+Memory info:
+               total        used        free      shared  buff/cache   available
+Mem:           3.7Gi       447Mi       3.0Gi       1.1Mi       319Mi       3.3Gi
+Swap:          199Mi          0B       199Mi
+
+Commit limits:
+CommitLimit:     3117092 kB
+Committed_AS:   65735988 kB
+
+Thread limits:
+26113
+
+Current thread count:
+8166
+Restoring original settings...
