@@ -17,7 +17,7 @@ test                         | Complete test suite that demonstrates the issue a
 
 PREREQUISITES
 =============
-openjdk-11-jdk, gcc
+openjdk-17-jdk, gcc
 
 
 RUNNING THE TESTS
