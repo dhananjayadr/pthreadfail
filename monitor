@@ -1,0 +1,20 @@
+#!/bin/bash
+
+echo "=== Initial System State ==="
+echo "Overcommit memory setting:"
+cat /proc/sys/vm/overcommit_memory
+
+echo -e "\nOvercommit ratio:"
+cat /proc/sys/vm/overcommit_ratio
+
+echo -e "\nMemory info:"
+free -h
+
+echo -e "\nCommit limits:"
+grep -E 'CommitLimit|Committed_AS' /proc/meminfo
+
+echo -e "\nThread limits:"
+cat /proc/sys/kernel/threads-max
+
+echo -e "\nCurrent thread count:"
+ps -eLf | wc -l

@@ -1,0 +1,85 @@
+echo "=== Virtual Memory Overcommit Thread Test ==="
+echo "Date: $(date)"
+echo "System: $(uname -a)"
+echo
+
+# Save original settings
+ORIG_OVERCOMMIT_MEMORY=$(cat /proc/sys/vm/overcommit_memory)
+ORIG_OVERCOMMIT_RATIO=$(cat /proc/sys/vm/overcommit_ratio)
+
+echo "Original settings:"
+echo "overcommit_memory: $ORIG_OVERCOMMIT_MEMORY"
+echo "overcommit_ratio: $ORIG_OVERCOMMIT_RATIO"
+echo
+
+# Function to restore settings
+restore_settings() {
+    echo "Restoring original settings..."
+    echo $ORIG_OVERCOMMIT_MEMORY | sudo tee /proc/sys/vm/overcommit_memory > /dev/null
+    echo $ORIG_OVERCOMMIT_RATIO | sudo tee /proc/sys/vm/overcommit_ratio > /dev/null
+}
+
+# Trap to restore on exit
+trap restore_settings EXIT
+
+# Test 1: Default settings
+echo "=== Test 1: Current Settings ==="
+./monitor
+echo
+
+# Test with restrictive overcommit settings
+echo "=== Test 2: Restrictive Overcommit (ratio=10) ==="
+echo "Setting overcommit_memory=2 (strict accounting)"
+echo "Setting overcommit_ratio=10 (very restrictive)"
+sudo sysctl vm.overcommit_memory=2
+sudo sysctl vm.overcommit_ratio=10
+
+./monitor
+echo
+
+echo "Running C thread test..."
+gcc -pthread -o thread_bomber thread_bomber.c
+./thread_bomber 5000 &
+CPID=$!
+
+sleep 30
+echo "Current state during C test:"
+./monitor
+kill $CPID 2>/dev/null
+wait $CPID 2>/dev/null
+
+echo -e "\n=== Test 3: Permissive Overcommit (ratio=75) ==="
+echo "Setting overcommit_ratio=75 (more permissive)"
+sudo sysctl vm.overcommit_ratio=75
+
+./monitor
+echo
+
+echo "Running Java thread test..."
+javac ThreadBomber.java
+java ThreadBomber 3000 &
+JPID=$!
+
+sleep 30
+echo "Current state during Java test:"
+./monitor
+kill $JPID 2>/dev/null
+wait $JPID 2>/dev/null
+
+echo -e "\n=== Test 4: No Overcommit Limits (overcommit_memory=1) ==="
+echo "Setting overcommit_memory=1 (always allow)"
+sudo sysctl vm.overcommit_memory=1
+
+./monitor
+echo
+
+echo "Running final thread test..."
+./thread_bomber 8000 &
+CPID2=$!
+
+sleep 30
+echo "Final state:"
+./monitor
+kill $CPID2 2>/dev/null
+wait $CPID2 2>/dev/null
+
