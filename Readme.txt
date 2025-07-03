@@ -39,21 +39,21 @@ RUNNING THE TESTS
 
 1. Check current system state
 -----------------------------
-./monitor
+   ./monitor
 
 2. Run individual tests
 -----------------------
 C test:
-gcc -pthread -o thread_bomber thread_bomber.c
-./thread_bomber 5000
+   gcc -pthread -o thread_bomber thread_bomber.c
+   ./thread_bomber 5000
 
 Python tests:
-python3 thread_bomber.py 3000
-python3 thread_bomber_futures.py 2000
+   python3 thread_bomber.py 3000
+   python3 thread_bomber_futures.py 2000
 
 Java test:
-javac ThreadBomber.java
-java ThreadBomber 3000
+   javac ThreadBomber.java
+   java ThreadBomber 3000
 
 3. Run complete test suite
 --------------------------
@@ -65,39 +65,39 @@ TEST SCENARIOS
 1. Reproduce EAGAIN Error
 -------------------------
 Demonstrate the original problem with restrictive overcommit settings:
+   
+   sudo sysctl vm.overcommit_memory=2
+   sudo sysctl vm.overcommit_ratio=10
+   ./monitor
+   
+   # Run test - should fail with EAGAIN while RAM is available
+   ./thread_bomber 5000
 
-sudo sysctl vm.overcommit_memory=2
-sudo sysctl vm.overcommit_ratio=10
-./monitor
-
-# Run test - should fail with EAGAIN while RAM is available
-./thread_bomber 5000
-
-Expected Result: Thread creation fails with EAGAIN error even though 
-physical RAM is available.
+   Expected Result: Thread creation fails with EAGAIN error even though 
+   physical RAM is available.
 
 2. Validate the Fix
 -------------------
 Increase overcommit ratio to allow more virtual memory:
-
-sudo sysctl vm.overcommit_ratio=75
-./monitor
-
-# Run same test - should create more threads successfully
-./thread_bomber 5000
-
-Expected Result: More threads created successfully with the same 
-physical memory usage.
+   
+   sudo sysctl vm.overcommit_ratio=75
+   ./monitor
+   
+   # Run same test - should create more threads successfully
+   ./thread_bomber 5000
+   
+   Expected Result: More threads created successfully with the same 
+   physical memory usage.
 
 3. No Virtual Memory Limits
 ---------------------------
 Remove virtual memory accounting restrictions:
 
-sudo sysctl vm.overcommit_memory=1
-./monitor
-
-# Test is now limited by actual system resources, not virtual memory accounting
-./thread_bomber 8000
-
-Expected Result: Thread creation only limited by actual system resources 
-(RAM, process limits, etc.).
+   sudo sysctl vm.overcommit_memory=1
+   ./monitor
+   
+   # Test is now limited by actual system resources, not virtual memory accounting
+   ./thread_bomber 8000
+   
+   Expected Result: Thread creation only limited by actual system resources 
+   (RAM, process limits, etc.).
