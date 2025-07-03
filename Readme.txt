@@ -1,62 +1,103 @@
+LINUX VIRTUAL MEMORY OVERCOMMIT THREAD CREATION TEST SUITE
+===========================================================
+
 OBJECTIVE
 =========
 Test scripts to validate and reproduce the virtual memory overcommit behavior 
-that causes Java thread creation failures, as diagnosed in the blog post:
+that causes thread creation failures using C, Java, and Python, as diagnosed 
+in the blog post:
 https://dhananjayadr.vercel.app/posts/data/linux-virtual-memory-overcommit-blocked-java-native-thread-creation
-
 
 TEST FILES
 ==========
-files                        | purpose
+File                         | Purpose
 ---------------------------- | ----------------------------------------------------------
-monitor                      | Display current system memory and overcommit settings
-ThreadBomber.java            | Java program to create threads and trigger the issue
+monitor_system.sh            | Display current system memory and overcommit settings
 thread_bomber.c              | C program using direct pthread_create() calls
-test                         | Complete test suite that demonstrates the issue and fixes
-
+thread_bomber.py             | Python program using threading.Thread
+ThreadBomber.java            | Java program to create threads and trigger the issue
+thread_bomber_futures.py     | Python program using ThreadPoolExecutor
+run_test.sh                  | Complete test suite that demonstrates the issue and fixes
 
 PREREQUISITES
 =============
-openjdk-17-jdk, gcc
+Required packages:
+- openjdk-11-jdk (or openjdk-17-jdk)
+- gcc
+- python3
 
+Required permissions:
+- sudo access to modify kernel parameters (vm.overcommit_memory, vm.overcommit_ratio)
+
+SETUP
+=====
+1. Clone repository and give execute permission for the scripts
+   chmod +x *.sh *.py
 
 RUNNING THE TESTS
 =================
-1. Run individual tests
------------------------
-Check current system state:
-./monitor_system.sh
 
-Compile and run C test:
+1. Check current system state
+-----------------------------
+./monitor
+
+2. Run individual tests
+-----------------------
+C test:
 gcc -pthread -o thread_bomber thread_bomber.c
 ./thread_bomber 5000
 
-Compile and run Java test:
+Python tests:
+python3 thread_bomber.py 3000
+python3 thread_bomber_futures.py 2000
+
+Java test:
 javac ThreadBomber.java
 java ThreadBomber 3000
 
-2. Run complete test suite
+3. Run complete test suite
 --------------------------
 sudo ./test
 
-
 TEST SCENARIOS
 ==============
+
 1. Reproduce EAGAIN Error
 -------------------------
+Demonstrate the original problem with restrictive overcommit settings:
+
 sudo sysctl vm.overcommit_memory=2
 sudo sysctl vm.overcommit_ratio=10
+./monitor
+
 # Run test - should fail with EAGAIN while RAM is available
 ./thread_bomber 5000
 
-2. Validate the fix you want to check
--------------------------------------
+Expected Result: Thread creation fails with EAGAIN error even though 
+physical RAM is available.
+
+2. Validate the Fix
+-------------------
+Increase overcommit ratio to allow more virtual memory:
+
 sudo sysctl vm.overcommit_ratio=75
+./monitor
+
 # Run same test - should create more threads successfully
 ./thread_bomber 5000
 
-3. No Limits
-------------
+Expected Result: More threads created successfully with the same 
+physical memory usage.
+
+3. No Virtual Memory Limits
+---------------------------
+Remove virtual memory accounting restrictions:
+
 sudo sysctl vm.overcommit_memory=1
-# Test is now limited by actual system resources, not virtual memory accounting:
+./monitor
+
+# Test is now limited by actual system resources, not virtual memory accounting
 ./thread_bomber 8000
+
+Expected Result: Thread creation only limited by actual system resources 
+(RAM, process limits, etc.).
