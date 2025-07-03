@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo "=== Virtual Memory Overcommit Thread Test ==="
+echo "Blog reference: [ADD YOUR BLOG URL HERE]"
 echo "Date: $(date)"
 echo "System: $(uname -a)"
 echo
@@ -68,14 +69,35 @@ echo "Current state during Java test:"
 kill $JPID 2>/dev/null
 wait $JPID 2>/dev/null
 
-echo -e "\n=== Test 4: No Overcommit Limits (overcommit_memory=1) ==="
+echo "Running Python thread test..."
+python3 thread_bomber.py 3000 &
+PYPID=$!
+
+sleep 30
+echo "Current state during Python test:"
+./monitor
+kill $PYPID 2>/dev/null
+wait $PYPID 2>/dev/null
+
+echo -e "\n=== Test 4: Python ThreadPoolExecutor Test ==="
+echo "Running Python ThreadPoolExecutor test..."
+python3 thread_bomber_futures.py 2000 &
+PYPID2=$!
+
+sleep 30
+echo "Current state during Python ThreadPoolExecutor test:"
+./monitor
+kill $PYPID2 2>/dev/null
+wait $PYPID2 2>/dev/null
+
+echo -e "\n=== Test 5: No Overcommit Limits (overcommit_memory=1) ==="
 echo "Setting overcommit_memory=1 (always allow)"
 sudo sysctl vm.overcommit_memory=1
 
 ./monitor
 echo
 
-echo "Running final thread test..."
+echo "Running final C thread test..."
 ./thread_bomber 8000 &
 CPID2=$!
 
@@ -85,3 +107,9 @@ echo "Final state:"
 kill $CPID2 2>/dev/null
 wait $CPID2 2>/dev/null
 
+echo -e "\n=== Test Summary ==="
+echo "All tests completed. Check the output above for:"
+echo "1. EAGAIN errors when overcommit limits are hit"
+echo "2. Different behavior between C, Java, and Python thread creation"
+echo "3. Virtual memory accounting vs physical memory usage"
+echo "4. Impact of overcommit_memory and overcommit_ratio settings"
