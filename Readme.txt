@@ -21,13 +21,13 @@ run_test.sh                  | Complete test suite that demonstrates the issue a
 
 PREREQUISITES
 =============
-Required packages:
-- openjdk-11-jdk (or openjdk-17-jdk)
-- gcc
-- python3
+1. Required packages:
+   - openjdk-11-jdk (or openjdk-17-jdk)
+   - gcc
+   - python3
 
-Required permissions:
-- sudo access to modify kernel parameters (vm.overcommit_memory, vm.overcommit_ratio)
+2. Required permissions:
+   - sudo access to modify kernel parameters (vm.overcommit_memory, vm.overcommit_ratio)
 
 SETUP
 =====
@@ -36,24 +36,23 @@ SETUP
 
 RUNNING THE TESTS
 =================
-
 1. Check current system state
 -----------------------------
    ./monitor
 
 2. Run individual tests
 -----------------------
-C test:
-   gcc -pthread -o thread_bomber thread_bomber.c
-   ./thread_bomber 5000
+   * C test:
+         gcc -pthread -o thread_bomber thread_bomber.c
+         ./thread_bomber 5000
 
-Python tests:
-   python3 thread_bomber.py 3000
-   python3 thread_bomber_futures.py 2000
-
-Java test:
-   javac ThreadBomber.java
-   java ThreadBomber 3000
+   * Python tests:
+         python3 thread_bomber.py 3000
+         python3 thread_bomber_futures.py 2000
+   
+   * Java test:
+         javac ThreadBomber.java
+         java ThreadBomber 3000
 
 3. Run complete test suite
 --------------------------
