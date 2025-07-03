@@ -57,7 +57,7 @@ Java test:
 
 3. Run complete test suite
 --------------------------
-sudo ./test
+   sudo ./test
 
 TEST SCENARIOS
 ==============
